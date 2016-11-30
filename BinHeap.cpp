@@ -14,7 +14,7 @@ BinHeap<T>::BinHeap()
     // TODO: Allocate initial heap array and store sentinel value
     heapSize = 0; maxSize = 1;
 
-    heapArray = new int[maxSize];
+    heapArray = new int[maxSize+1];
     heapArray[0] = -1;
 
 }
@@ -35,9 +35,9 @@ BinHeap<T>::~BinHeap()
 #if ISEMPTY || ALL
 // TODO: isEmpty() method
 template <class T>
-bool BinHeap::isEmpty()
+bool BinHeap<T>::isEmpty()
 {
-
+    return (heapSize == 0);
 }
 #endif
 
@@ -45,9 +45,14 @@ bool BinHeap::isEmpty()
 
 #if MAKEEMPTY || ALL
 template <class T>
-void BinHeap::makeEmpty()
+void BinHeap<T>::makeEmpty()
 {
+    delete[] heapArray;
 
+    heapSize = 0; maxSize = 1;
+
+    heapArray = new int[maxSize];
+    heapArray[0] = -1;
 }
 #endif
 
@@ -55,9 +60,18 @@ void BinHeap::makeEmpty()
 
 #if RESIZEARRAY || ALL
 // TODO: resizeArray() method
-void BinHeap::resizeArray(int newSize)
+template <class T>
+void BinHeap<T>::resizeArray(int newSize)
 {
+    T* newArray = new int[newSize+1];
+    newArray[0] = -1;
 
+    for(int i=1; i<=heapSize; i++)
+    {
+        newArray[i] = heapArray[i];
+    }
+    delete[] heapArray;
+    maxSize = newSize;
 }
 #endif
 
@@ -65,9 +79,10 @@ void BinHeap::resizeArray(int newSize)
 
 #if LEFTINDEX || ALL
 // TODO: leftIndex() method
-int BinHeap::leftIndex(int idx)
+template <class T>
+int BinHeap<T>::leftIndex(int idx)
 {
-
+    return 2*idx;
 }
 #endif
 
@@ -75,9 +90,10 @@ int BinHeap::leftIndex(int idx)
 
 #if RIGHTINDEX || ALL
 // TODO: rightIndex() method
-int BinHeap::rightIndex(int idx)
+template <class T>
+int BinHeap<T>::rightIndex(int idx)
 {
-
+    return 2*idx + 1;
 }
 #endif
 
@@ -85,9 +101,10 @@ int BinHeap::rightIndex(int idx)
 
 #if PARENTINDEX || ALL
 // TODO: parentIndex() method
-int BinHeap::parentIndex(int idx)
+template <class T>
+int BinHeap<T>::parentIndex(int idx)
 {
-
+    return idx/2;
 }
 #endif
 
@@ -95,9 +112,22 @@ int BinHeap::parentIndex(int idx)
 
 #if MINCHILD || ALL
 // TODO: minChild() method
-int BinHeap::minChild(int idx)
+template <class T>
+int BinHeap<T>::minChild(int idx)
 {
+    if(leftIndex(idx) == NULL && rightIndex(idx) == NULL)
+    {
+        return -1;
+    }
+    else
+    {
+        if(rightIndex(idx) > leftIndex(idx))
+        {
+            return leftIndex(idx);
+        }
 
+        return rightIndex(idx);
+    }
 }
 #endif
 
@@ -106,9 +136,16 @@ int BinHeap::minChild(int idx)
 #if INSERT || ALL
 // TODO: insert() method
 template <class T>
-void BinHeap::insert(const T & x)
+void BinHeap<T>::insert(const T & x)
 {
+    if(heapSize == maxSize)
+    {
+        resizeArray(maxSize*2);
+    }
 
+    heapSize++;
+    heapArray[heapSize] = x;
+    percolateUp(heapSize);
 }
 #endif
 
@@ -117,7 +154,7 @@ void BinHeap::insert(const T & x)
 #if REMOVEMIN || ALL
 // TODO: removeMin() method
 template <class T>
-T BinHeap::removeMin()
+T BinHeap<T>::removeMin()
 {
 
 }
@@ -127,9 +164,16 @@ T BinHeap::removeMin()
 
 #if PERCOLATEUP || ALL
 // TODO: percolateUp() method
-void BinHeap::percolateUp(int idx)
+template <class T>
+void BinHeap<T>::percolateUp(int idx)
 {
-
+    while(idx > 0 && heapArray[parentIndex(idx)] > heapArray[idx])
+    {
+        int element =  heapArray[idx];
+        heapArray[idx] = heapArray[parentIndex(idx)];
+        heapArray[parentIndex(idx)] = element;
+        idx = idx/2;
+    }
 }
 #endif
 
@@ -137,9 +181,26 @@ void BinHeap::percolateUp(int idx)
 
 #if PERCOLATEDOWN || ALL
 // TODO: percolateDown() method
-void BinHeap::percolateDown(int idx)
+template <class T>
+void BinHeap<T>::percolateDown(int idx)
 {
+    while(idx <= heapSize && heapArray[idx] > heapArray[leftIndex(idx)] && heapArray[idx] > heapArray[rightIndex(idx)])
+    {
+        int element =  heapArray[idx];
 
+        if(minChild(idx) == leftIndex(idx))
+        {
+            heapArray[idx] = heapArray[leftIndex(idx)];
+            heapArray[leftIndex(idx)] = element;
+            idx = 2*idx;
+        }
+        else if(minChild(idx) == rightIndex(idx))
+        {
+            heapArray[idx] = heapArray[rightIndex(idx)];
+            heapArray[rightIndex(idx)] = element;
+            idx = 2*idx + 1;
+        }
+    }
 }
 #endif
 
@@ -148,7 +209,7 @@ void BinHeap::percolateDown(int idx)
 #if BUILDHEAP || ALL
 // TODO: buildHeap() method
 template <class T>
-void BinHeap::buildHeap(const T* arr, int size)
+void BinHeap<T>::buildHeap(const T* arr, int size)
 {
 
 }
