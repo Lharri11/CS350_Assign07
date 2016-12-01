@@ -70,7 +70,9 @@ void BinHeap<T>::resizeArray(int newSize)
     {
         newArray[i] = heapArray[i];
     }
+
     delete[] heapArray;
+    heapArray = newArray;
     maxSize = newSize;
 }
 #endif
@@ -115,18 +117,21 @@ int BinHeap<T>::parentIndex(int idx)
 template <class T>
 int BinHeap<T>::minChild(int idx)
 {
-    if(leftIndex(idx) == NULL && rightIndex(idx) == NULL)
+    if(leftIndex(idx) > heapSize)
     {
         return -1;
     }
     else
     {
-        if(rightIndex(idx) > leftIndex(idx))
+        if(rightIndex(idx) <= heapSize)
         {
-            return leftIndex(idx);
+            if(heapArray[rightIndex(idx)] > heapArray[leftIndex(idx)])
+            {
+                return leftIndex(idx);
+            }
+            return rightIndex(idx);
         }
-
-        return rightIndex(idx);
+        return leftIndex(idx);
     }
 }
 #endif
@@ -156,7 +161,19 @@ void BinHeap<T>::insert(const T & x)
 template <class T>
 T BinHeap<T>::removeMin()
 {
+    int element = heapArray[1] = 0, mChild = minChild(1);
 
+    heapArray[1] = heapArray[mChild];
+    heapArray[mChild] = element;
+    percolateDown(mChild);
+    heapSize--;
+
+    if(heapSize < maxSize/3)
+    {
+        resizeArray(maxSize/2);
+        return *heapArray;
+    }
+    return *heapArray;
 }
 #endif
 
@@ -184,22 +201,15 @@ void BinHeap<T>::percolateUp(int idx)
 template <class T>
 void BinHeap<T>::percolateDown(int idx)
 {
-    while(idx <= heapSize && heapArray[idx] > heapArray[leftIndex(idx)] && heapArray[idx] > heapArray[rightIndex(idx)])
+    int mChild = minChild(idx);
+
+    while(mChild != -1 && idx <= heapSize && heapArray[idx] > heapArray[mChild])
     {
         int element =  heapArray[idx];
-
-        if(minChild(idx) == leftIndex(idx))
-        {
-            heapArray[idx] = heapArray[leftIndex(idx)];
-            heapArray[leftIndex(idx)] = element;
-            idx = 2*idx;
-        }
-        else if(minChild(idx) == rightIndex(idx))
-        {
-            heapArray[idx] = heapArray[rightIndex(idx)];
-            heapArray[rightIndex(idx)] = element;
-            idx = 2*idx + 1;
-        }
+        heapArray[idx] = heapArray[mChild];
+        heapArray[minChild(idx)] = element;
+        idx = mChild;
+        mChild = minChild(mChild);
     }
 }
 #endif
